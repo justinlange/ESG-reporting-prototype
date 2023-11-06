@@ -1,0 +1,10 @@
+[
+    {
+        "display_text": "What are the main findings of this study?",
+        "query_text": "Summarize the key results of the research presented in the document."
+    },
+    {
+        "display_text": "Your display text here",
+        "query_text": "Your query text here"
+    }
+]
