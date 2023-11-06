@@ -6,5 +6,9 @@
     {
         "display_text": "Your display text here",
         "query_text": "Your query text here"
+    },
+    {
+        "display_text": "How rigerous was the company conducting their GHG emissions audit?",
+        "query_text": "What GHG scope did the company in question use for their audit and how thorough was their methology in creating the report? Please create a highly critical 500 word analysis on how well it meets current standards for this kind of reporting, and identify areas of imrpovement"
     }
 ]
