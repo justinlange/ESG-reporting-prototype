@@ -42,38 +42,46 @@ def process_text(text):
 
 def main():
     st.title("Chat with your PDF 💬")
-    
+
     # Load prebaked questions from JSON file
     with open('prebaked_questions.json') as f:
         prebaked_questions = json.load(f)
-    
-    pdf = st.file_uploader('Upload your PDF Document', type='pdf')
+
+    pdfs = st.file_uploader('Upload your PDF Documents', type='pdf', accept_multiple_files=True)
     
     # Dropdown menu for prebaked questions
     question_options = [q['display_text'] for q in prebaked_questions]
-    selected_question = st.selectbox("Choose a prebaked question:", options=question_options)
-    # Find the actual query text for the selected question
-    actual_query_text = next((q['query_text'] for q in prebaked_questions if q['display_text'] == selected_question), None)
-    
-    if pdf is not None:
-        pdf_reader = PdfReader(pdf)
-        text = ""
-        for page in pdf_reader.pages:
-            text += page.extract_text()
+    question_options.append('Custom question')  # Add custom question option
+    selected_question = st.selectbox("Choose a question:", options=question_options)
+
+    # If 'Custom question' is selected, show a text entry box for input
+    query = ""
+    if selected_question == 'Custom question':
+        query = st.text_input('Please enter your question:')
+    else:
+        # Find the actual query text for the selected question
+        query = next((q['query_text'] for q in prebaked_questions if q['display_text'] == selected_question), None)
+
+    # Go button
+    go_button = st.button('Go')
+
+#    if st.button('Go') and pdf is not None:
+        # pdf_reader = PdfReader(pdf)
+        # text = ""
+        # for page in pdf_reader.pages:
+        #     text += page.extract_text()
         
+        # knowledgeBase = process_text(text)
+        # The indented block starts here
+    if go_button and pdfs:
+        text = ""
+        for uploaded_file in pdfs:
+            pdf_reader = PdfReader(uploaded_file)
+            for page in pdf_reader.pages:
+                text += page.extract_text() + "\n"  # Append a newline character between pages for better separation
         knowledgeBase = process_text(text)
         
-        if actual_query_text:  # Use the actual query text for the model
-            query = actual_query_text
-        else:  # Or use the manual input if no prebaked question is selected
-            query = st.text_input('Ask a question to the PDF')
-        
-        cancel_button = st.button('Cancel')
-        
-        if cancel_button:
-            st.stop()
-        
-        if query:
+        if query:  # Use the actual query text for the model
             docs = knowledgeBase.similarity_search(query)
 
             llm = OpenAI()
@@ -81,9 +89,11 @@ def main():
             
             with get_openai_callback() as cost:
                 response = chain.run(input_documents=docs, question=query)
-                print(cost)
+                st.write(f"Cost of the operation: {cost}")
                 
             st.write(response)
-            
+        else:
+            st.warning('Please enter a question or select a prebaked one.')
+
 if __name__ == "__main__":
     main()
